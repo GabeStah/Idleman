@@ -47,6 +47,9 @@
     <Reference Include="Emgu.CV.World">
       <HintPath>..\..\..\languages\csharp\libs\Emgu\emgucv-windesktop 3.2.0.2682\bin\Emgu.CV.World.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -83,7 +86,7 @@
     <Compile Include="Async\AsyncProducerConsumerCollection.cs" />
     <Compile Include="Capture.cs" />
     <Compile Include="Extensions\Bitmaps.cs" />
-    <Compile Include="Imaging\IApplicationTarget.cs" />
+    <Compile Include="ITargetCatalog.cs" />
     <Compile Include="ScreenCapture.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Tests\Capturing.cs" />
@@ -119,6 +122,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -138,19 +142,22 @@
     <Resource Include="assets\images\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="applications\zombidle\assets\images\monsters\01-bob-the-necromancer.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\02-zombie-horde.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\03-giant-zombie.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\04-red-knight.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\05-blue-specter.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\06-swarm-of-bats.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\07-the-big-plague.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\08-the-black-lich.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\09-flying-squid.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\01-bob-the-necromancer.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\02-zombie-horde.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\03-giant-zombie.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\04-red-knight.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\05-blue-specter.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\06-swarm-of-bats.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\07-the-big-plague.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\08-the-black-lich.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\09-flying-squid.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="applications\zombidle\assets\images\monsters\10-the-tomb-king.png" />
-    <Resource Include="applications\zombidle\assets\images\monsters\11-carl-the-monolith.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\10-the-tomb-king.png" />
+    <Resource Include="Modules\zombidle\assets\images\monsters\11-carl-the-monolith.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Imaging\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
