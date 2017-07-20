@@ -49,7 +49,7 @@ namespace Idleman.Extensions
         {
             using (var stream = new MemoryStream())
             {
-                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                bitmap.Save(stream, ImageFormat.Bmp);
                 return stream.ToArray();
             }
         }
@@ -59,7 +59,8 @@ namespace Idleman.Extensions
             var handle = bitmap.GetHbitmap();
             try
             {
-                return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                var source = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                return source;
             }
             finally { DeleteObject(handle); }
         }

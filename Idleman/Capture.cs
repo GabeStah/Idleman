@@ -25,7 +25,7 @@ using Emgu.CV.Structure;
 
 namespace Idleman
 {
-    class Capture
+    public class Capture
     {
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/threading-model
@@ -47,6 +47,8 @@ namespace Idleman
 
             //OcrEngine = new OcrEngine();
 
+            Screen = new Screen();
+
             //// Load all available languages from OcrLanguage enum in combo box.
             //LanguageList.ItemsSource = Enum.GetNames(typeof(OcrLanguage)).OrderBy(name => name.ToString());
             //LanguageList.SelectedItem = OcrEngine.Language.ToString();
@@ -59,7 +61,8 @@ namespace Idleman
             // If no engine, return void.
             if (ocrEngine == null) return null;
             var screen = new Screen();
-            var softwarebitmap = await screen.GetBitmap().ToBitmapImage().ToSoftwareBitmap();
+            var bitmap = await screen.GetBitmap();
+            var softwarebitmap = await bitmap.ToBitmapImage().ToSoftwareBitmap();
             var ocrResult = await ocrEngine.RecognizeAsync(softwarebitmap);
             Logging.Log(ocrResult.Text);
             return softwarebitmap;
@@ -90,14 +93,14 @@ namespace Idleman
         public async Task<Image<Bgr, byte>> TestImageMatch()
         {
             // If no engine, return void.
-            if (OcrEngine == null || Screen == null) return null;
-            var screenBitmap = Screen.GetBitmap();
+            if (Screen == null) return null;
+            var screenBitmap = Screen.Window.Image;
             //var ocrResult = await OcrEngine.RecognizeAsync(bitmap);
             //Logging.Log(ocrResult.Text);
             //return bitmap;
 
-            Image<Bgr, byte> source = new Image<Bgr, byte>(screenBitmap);
-            Image<Bgr, byte> template = new Image<Bgr, byte>("D:\\dev\\apps\\Idleman\\Idleman\\assets\\images\\zombidle\\monsters\\9-flying-squid.png");
+            Image<Bgr, byte> source = new Image<Bgr, byte>((Bitmap) screenBitmap);
+            Image<Bgr, byte> template = new Image<Bgr, byte>("D:\\dev\\csharp\\projects\\Idleman\\Idleman\\assets\\images\\zombidle\\monsters\\11-carl-the-monolith.png");
             Image<Bgr, byte> imageToShow = source.Copy();
 
             using (Image<Gray, float> result = source.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.CcoeffNormed))
@@ -119,6 +122,75 @@ namespace Idleman
             }
             return null;
         }
+
+        public async Task<Image<Bgr, byte>> TestImageMatch2()
+        {
+            //await Task.Run(() =>
+            //{
+                // If no engine, return void.
+                //if (OcrEngine == null || Screen == null) return null;
+                if (Screen == null) return null;
+                var screenBitmap = Screen.Window.Image;
+                //var ocrResult = await OcrEngine.RecognizeAsync(bitmap);
+                //Logging.Log(ocrResult.Text);
+                //return bitmap;
+
+                Image<Bgr, byte> source = new Image<Bgr, byte>((Bitmap)screenBitmap);
+                Image<Bgr, byte> template = new Image<Bgr, byte>("D:\\dev\\csharp\\projects\\Idleman\\Idleman\\assets\\images\\zombidle\\monsters\\11-carl-the-monolith.png");
+                Image<Bgr, byte> imageToShow = source.Copy();
+
+                using (Image<Gray, float> result = source.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.CcoeffNormed))
+                {
+                    double[] minValues;
+                    double[] maxValues;
+                    System.Drawing.Point[] minLocations;
+                    System.Drawing.Point[] maxLocations;
+                    result.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
+
+                    // You can try different values of the threshold. I guess somewhere between 0.75 and 0.95 would be good.
+                    if (maxValues[0] > 0.8)
+                    {
+                        // This is a match. Do something with it, for example draw a rectangle around it.
+                        Rectangle match = new Rectangle(maxLocations[0], template.Size);
+                        imageToShow.Draw(match, new Bgr(Color.Red), 3);
+                        return imageToShow;
+                    }
+                }
+                return null;
+            //});
+            //return null;
+        }
+
+        public static Bitmap FindMarker(Bitmap sourceBitmap, Bitmap targetBitmap)
+        {
+            Image<Bgr, byte> source = new Image<Bgr, byte>(sourceBitmap);
+            Image<Bgr, byte> target = new Image<Bgr, byte>(targetBitmap);
+            Image<Bgr, byte> imageToShow = source.Copy();
+
+            using (Image<Gray, float> result = source.MatchTemplate(target, Emgu.CV.CvEnum.TemplateMatchingType.CcoeffNormed))
+            {
+                double[] minValues;
+                double[] maxValues;
+                System.Drawing.Point[] minLocations;
+                System.Drawing.Point[] maxLocations;
+                result.MinMax(out minValues, out maxValues, out minLocations, out maxLocations);
+
+                // You can try different values of the threshold. I guess somewhere between 0.75 and 0.95 would be good.
+                if (maxValues[0] > 0.8)
+                {
+                    // This is a match. Do something with it, for example draw a rectangle around it.
+                    Rectangle match = new Rectangle(maxLocations[0], target.Size);
+                    imageToShow.Draw(match, new Bgr(Color.Red), 3);
+                    return imageToShow.ToBitmap();
+                }
+            }
+            return null;
+        }
+
+        //public Image<Bgr, byte> FindMarker(Bitmap source, Bitmap target)
+        //{
+
+        //}
 
         public void TestTesseractOcr()
         {

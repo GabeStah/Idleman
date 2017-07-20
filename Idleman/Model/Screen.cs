@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -11,13 +12,13 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Windows.Graphics.Imaging;
+using GalaSoft.MvvmLight;
 using Idleman.Extensions;
-using Point = System.Windows.Point;
-using Size = System.Windows.Size;
+using ManagedWinapi.Windows;
 
 namespace Idleman
 {
-    internal enum VirtualKeyCodes : int
+    public enum VirtualKeyCodes : int
     {
         KeyDown = 0x0100,
         KeyUp = 0x0101,
@@ -27,13 +28,43 @@ namespace Idleman
         Zero = 0x00000000
     }
 
-    class Screen
+    public partial class Screen : ObservableObject
     {
-        public Bitmap Screenshot { get; set;}
-        public IntPtr Handle { get; set; }
-
         private const string ClassNameDefault = "ApolloRuntimeContentWindow";
         private const string WindowNameDefault = "Zombidle";
+
+        private IntPtr _handle;
+        public IntPtr Handle
+        {
+            get => _handle;
+            set { Set(() => Handle, ref _handle, value); }
+        }
+
+        private Bitmap _screenshot;
+        public Bitmap Screenshot
+        {
+            get => _screenshot;
+            set { Set(() => Screenshot, ref _screenshot, value); }
+        }
+
+        private SystemWindow _window;
+        public SystemWindow Window
+        {
+            // TODO: Check for ArgumentException on System.Window.Image call.
+            get => _window;
+            set { Set(() => Window, ref _window, value); }
+        }
+
+        private Rect _screenRectangle;
+        public Rect ScreenRectangle
+        {
+            get
+            {
+                if (_screenRectangle.Width == 0) { UpdateScreenRectangle(); }
+                return _screenRectangle;
+            }
+            set => _screenRectangle = value;
+        }
 
         //If you get 'dllimport unknown'-, then add 'using System.Runtime.InteropServices;'
         [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
@@ -56,117 +87,10 @@ namespace Idleman
         [DllImport("user32.dll", EntryPoint = "PrintWindow")]
         public static extern bool CaptureBitmap(IntPtr windowHandle, IntPtr hdcBlt, int nFlags);
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct Rect
-        {
-            public Rect(Rect rectangle) : this(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom)
-            {
-            }
-            public Rect(int left, int top, int right, int bottom)
-            {
-                X = left;
-                Y = top;
-                this.Right = right;
-                this.Bottom = bottom;
-            }
-
-            public int X { get; set; }
-
-            public int Y { get; set; }
-
-            public int Left
-            {
-                get => X;
-                set => X = value;
-            }
-            public int Top
-            {
-                get => Y;
-                set => Y = value;
-            }
-            public int Right { get; set; }
-
-            public int Bottom { get; set; }
-
-            public int Height
-            {
-                get => Bottom - Y;
-                set => Bottom = value + Y;
-            }
-            public int Width
-            {
-                get => Right - X;
-                set => Right = value + X;
-            }
-            public Point Location
-            {
-                get => new Point(Left, Top);
-                set
-                {
-                    X = (int) value.X;
-                    Y = (int) value.Y;
-                }
-            }
-            public Size Size
-            {
-                get => new Size(Width, Height);
-                set
-                {
-                    Right = (int) (value.Width + X);
-                    Bottom = (int) (value.Height + Y);
-                }
-            }
-
-            public static implicit operator Rectangle(Rect rectangle)
-            {
-                return new Rectangle(rectangle.Left, rectangle.Top, rectangle.Width, rectangle.Height);
-            }
-            public static implicit operator Rect(Rectangle rectangle)
-            {
-                return new Rect(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
-            }
-            public static bool operator ==(Rect rectangle1, Rect rectangle2)
-            {
-                return rectangle1.Equals(rectangle2);
-            }
-            public static bool operator !=(Rect rectangle1, Rect rectangle2)
-            {
-                return !rectangle1.Equals(rectangle2);
-            }
-
-            public override string ToString()
-            {
-                return "{Left: " + X + "; " + "Top: " + Y + "; Right: " + Right + "; Bottom: " + Bottom + "}";
-            }
-
-            public override int GetHashCode()
-            {
-                return ToString().GetHashCode();
-            }
-
-            public bool Equals(Rect rectangle)
-            {
-                return rectangle.Left == X && rectangle.Top == Y && rectangle.Right == Right && rectangle.Bottom == Bottom;
-            }
-
-            public override bool Equals(object Object)
-            {
-                if (Object is Rect)
-                {
-                    return Equals((Rect)Object);
-                }
-                else if (Object is Rectangle)
-                {
-                    return Equals(new Rect((Rectangle)Object));
-                }
-
-                return false;
-            }
-        }
-
         public Screen()
         {
             Handle = FindWindow(ClassNameDefault, WindowNameDefault);
+            Window = new SystemWindow(Handle);
         }
 
         public Screen(string className)
@@ -177,6 +101,17 @@ namespace Idleman
         public Screen(string className, string windowName)
         {
             Handle = FindWindow(className, windowName);
+        }
+
+        //public Screen(bool useWinApi)
+        //{
+        //    Handle = FindWindow(ClassNameDefault, WindowNameDefault);
+        //    Window = new SystemWindow(Handle);
+        //}
+
+        public void TestWinApi()
+        {
+            
         }
 
         /// <summary>
@@ -265,15 +200,18 @@ namespace Idleman
         /// TODO: Remove GetWindowRect call and use instance variable value, which should be updated on window resize events.
         /// </remarks>
         /// <returns>The retrieved bitmap.</returns>
-        public Bitmap GetBitmap()
+        public Task<Bitmap> GetBitmap()
         {
-            GetWindowRect(this.Handle, out Rect rect);
+            return Task.Run(() => GetBitmapAsync());
+        }
 
-            var bitmap = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
+        private Bitmap GetBitmapAsync()
+        {
+            var bitmap = new Bitmap(ScreenRectangle.Width, ScreenRectangle.Height, PixelFormat.Format32bppArgb);
             var graphics = Graphics.FromImage(bitmap);
             var bitmapHandle = graphics.GetHdc();
 
-            CaptureBitmap(this.Handle, bitmapHandle, 0);
+            CaptureBitmap(Handle, bitmapHandle, 0);
 
             graphics.ReleaseHdc(bitmapHandle);
             graphics.Dispose();
@@ -281,10 +219,16 @@ namespace Idleman
             // Delete bitmap handle.
             DeleteObject(bitmapHandle);
 
-            // Set current screenshot.
-            this.Screenshot = bitmap;
-
             return bitmap;
+        }
+
+        /// <summary>
+        /// Update the stored ScreenRectangle object for use elsewhere.
+        /// </summary>
+        private void UpdateScreenRectangle()
+        {
+            GetWindowRect(Handle, out Rect rectangle);
+            ScreenRectangle = rectangle;
         }
 
         /// <summary>
@@ -293,12 +237,8 @@ namespace Idleman
         /// <returns>SoftwareBitmap image.</returns>
         public async Task<SoftwareBitmap> GetSoftwareBitmap()
         {
-            return await GetBitmap().ToSoftwareBitmap();
-        }
-
-        public void SaveScreenshot(string filePath)
-        {
-            Screenshot.Save(filePath, ImageFormat.Png);
+            var bitmap = GetBitmap();
+            return await bitmap.Result?.ToSoftwareBitmap();
         }
     }
 }

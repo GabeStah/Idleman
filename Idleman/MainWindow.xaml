@@ -3,11 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Idleman"
         mc:Ignorable="d"
         Title="MainWindow" Height="830" Width="1422" Initialized="Window_Initialized" MouseDown="Window_MouseDown">
-    <Grid>
-        <Image x:Name="screenshot" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="UniformToFill" MouseDown="screenshot_MouseDown"/>
-
+    <Grid x:Name="MainGrid" Background="Beige" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType = {x:Type Window}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+        <Image x:Name="Screenshot" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" MouseDown="Screenshot_MouseDown" />
+        <Canvas x:Name="MarkerCanvas" HorizontalAlignment="Left" VerticalAlignment="Top" MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseUp="Canvas_MouseUp" Background="Transparent" Height="{Binding Path=ActualHeight, ElementName=MainGrid}" Width="{Binding Path=ActualWidth, ElementName=MainGrid}">
+            <Rectangle x:Name="MarkerSelectionRectangle" Stroke="LightBlue" Fill="#220000FF"/>
+        </Canvas>
     </Grid>
 </Window>

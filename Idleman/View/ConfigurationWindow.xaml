@@ -1,0 +1,25 @@
+﻿<Window x:Class="Idleman.View.ConfigurationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ConfigurationWindow" Height="1014.286" Width="2314.286">
+    <Grid x:Name="MainGrid">
+        <Image x:Name="CaptureImage" HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
+        <Canvas x:Name="MarkerCanvas" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top" 
+                Background="Transparent" 
+                Height="{Binding Path=ActualHeight, ElementName=MainGrid}"
+                Width="{Binding Path=ActualWidth, ElementName=MainGrid}"
+                MouseDown="MarkerCanvas_MouseDown">
+            <Label x:Name="label" Width="1000" Height="50" Background="Coral">
+            </Label>
+            <Rectangle x:Name="MarkerSelectionRectangle" Stroke="LightBlue" Fill="#220000FF"/>
+            <Button x:Name="ChooseFolderButton" Content="Choose Folder" Canvas.Left="287" Canvas.Top="10" Width="75" Click="ChooseFolderButton_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel Button" Canvas.Left="396" Canvas.Top="10" Width="75" Click="CancelButton_Click"/>
+            <Button x:Name="CaptureTestButton" Content="Being Capture Test" Width="120" Click="CaptureTestButton_Click"/>
+        </Canvas>
+    </Grid>
+</Window>

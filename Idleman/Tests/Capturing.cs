@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Windows.Media.Ocr;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using Idleman.Extensions;
 using Utility;
 
 namespace Idleman.Tests
@@ -36,6 +39,16 @@ namespace Idleman.Tests
             }
         }
 
+        public static async Task<ImageSource> DuplicateZombidleWindow(int iterations = 6000)
+        {
+            var capture = new Capture
+            {
+                Screen = new Screen()
+            };
+            var bitmap = await capture.Screen.GetBitmap();
+            return bitmap?.ToImageSource();
+        }
+
 
         public static async Task<Image<Bgr, byte>> CaptureSubImageTest()
         {
@@ -46,6 +59,17 @@ namespace Idleman.Tests
             };
 
             return await capture.TestImageMatch();
+        }
+
+        public static async Task<Image<Bgr, byte>> CaptureSubImageTest2()
+        {
+            var capture = new Capture
+            {
+                OcrEngine = OcrEngine.TryCreateFromUserProfileLanguages(),
+                Screen = new Screen()
+            };
+
+            return await capture.TestImageMatch2();
         }
     }
 }
